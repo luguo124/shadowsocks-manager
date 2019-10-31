@@ -615,9 +615,12 @@ exports.status = async (req, res) => {
     const version = appRequire('package').version;
     const site = config.plugins.webgui.site;
     const skin = config.plugins.webgui.skin || 'default';
+    const language = config.plugins.webgui.language || '';
     const google_login_client_id = config.plugins.webgui.google_login_client_id || '';
     const facebook_login_client_id = config.plugins.webgui.facebook_login_client_id || '';
     const github_login_client_id = config.plugins.webgui.github_login_client_id || '';
+    const twitter_login_client_id = !!config.plugins.webgui.twitter_login_consumer_key;
+    const crisp = (config.plugins.webgui_crisp && config.plugins.webgui_crisp.use) ? config.plugins.webgui_crisp.websiteId : '';
     let alipay;
     let paypal;
     let paypalMode;
@@ -628,6 +631,7 @@ exports.status = async (req, res) => {
     let subscribe;
     let multiAccount;
     let simple;
+    let macAccount;
     if(status) {
       email = (await knex('user').select(['email']).where({ id }).then(s => s[0])).email;
       alipay = config.plugins.alipay && config.plugins.alipay.use;
@@ -653,6 +657,12 @@ exports.status = async (req, res) => {
         success[0].value = JSON.parse(success[0].value);
         return success[0].value;
       })).simple;
+      macAccount = (await knex('webguiSetting').select().where({
+        key: 'account',
+      }).then(success => {
+        success[0].value = JSON.parse(success[0].value);
+        return success[0].value;
+      })).macAccount;
     }
     if(status === 'normal') {
       knex('user').update({ lastLogin: Date.now() }).where({ id }).then();
@@ -669,6 +679,7 @@ exports.status = async (req, res) => {
       browserColor,
       site,
       skin,
+      language,
       alipay,
       paypal,
       paypalMode,
@@ -678,9 +689,12 @@ exports.status = async (req, res) => {
       subscribe,
       multiAccount,
       simple,
+      macAccount,
       google_login_client_id,
       facebook_login_client_id,
       github_login_client_id,
+      twitter_login_client_id,
+      crisp,
     });
   } catch(err) {
     logger.error(err);

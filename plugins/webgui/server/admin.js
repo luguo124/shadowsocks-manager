@@ -109,6 +109,18 @@ exports.getOneAccount = async (req, res) => {
       }
     }
     await accountFlow.edit(accountInfo.id);
+
+    const onlines = await account.getOnlineAccount();
+    const serversWithoutWireGuard = await knex('server').select(['id']).where({ type: 'Shadowsocks' }).then(s => s.map(m => m.id));
+    accountInfo.idle = serversWithoutWireGuard.filter(server => {
+      if(accountInfo.server) {
+        return accountInfo.server.includes(server);
+      }
+      return true;
+    }).sort((a, b) => {
+      return (onlines[a] || 0)  - (onlines[b] || 0);
+    })[0];
+
     return res.send(accountInfo);
   } catch(err) {
     console.log(err);
@@ -590,7 +602,7 @@ exports.getAccountIpInfo = (req, res) => {
       if(success.code !== 0) {
         return Promise.reject(success.code);
       }
-      const result = [success.data.region + success.data.city, success.data.isp];
+      const result = [success.data.region + (success.data.region === success.data.city ? '' : success.data.city), success.data.isp];
       return result;
     });
   };

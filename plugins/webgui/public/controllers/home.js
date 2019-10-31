@@ -45,6 +45,9 @@ app
   ])
   .controller('HomeIndexController', ['$scope', '$state',
     ($scope, $state) => {
+      if($scope.config.crisp && $crisp.is) {
+        window.location.reload();
+      }
       $scope.login = () => { $state.go('home.login'); };
       $scope.signup = () => { $state.go('home.signup'); };
     }
@@ -90,6 +93,7 @@ app
       $scope.socialLogin = () => {
         $state.go('home.social');
       };
+      $scope.hasSocialLogin = !!($scope.config.facebook_login_client_id || $scope.config.twitter_login_client_id || $scope.config.github_login_client_id || $scope.config.google_login_client_id);
     }
   ])
   .controller('HomeSignupController', ['$scope', '$state', '$interval', '$timeout', 'homeApi', 'alertDialog', '$localStorage', 'configManager',
